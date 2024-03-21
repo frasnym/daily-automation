@@ -1,8 +1,10 @@
 name: Automatic do login to matchwatch everyday
 
 on:
-  schedule:
-    - cron: "*/5 * * * *" # Runs aevery 5 minutes
+  push
+  # schedule:
+    # - cron: "*/5 * * * *" # Runs every 5 minutes (test)
+    # - cron: "0 0 1 1 *" # Runs every 5 minutes (test)
 
 jobs:
   build:
@@ -24,10 +26,7 @@ jobs:
 
       - name: Run Python script (login to matchwatch)
         env:
-          ACCOUNT1: ${{ secrets.ACCOUNT1 }}
-          PASSWORD1: ${{ secrets.PASSWORD1 }}
-          ACCOUNT2: ${{ secrets.ACCOUNT2 }}
-          PASSWORD2: ${{ secrets.PASSWORD2 }}
+          ACCOUNTS: ${{ secrets.ACCOUNTS }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: python3 matchwatch/main.py
