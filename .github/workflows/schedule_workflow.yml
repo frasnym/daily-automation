@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Python script (login to matchwatch)
         env:
-          APP: ${{ github.event.pull_request.head.repo.full_name }}
+          APP: ${{ github.event.repository.name }}
           ACCOUNTS: ${{ secrets.ACCOUNTS }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
