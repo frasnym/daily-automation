@@ -1,9 +1,9 @@
 name: Automatic do login to matchwatch everyday
 
 on:
-  push # (test)
-  # schedule:
-  #   - cron: "0 5 * * *" # Runs At 05:00 everyday
+  # push # (test)
+  schedule:
+    - cron: "0 5 * * *" # Runs At 05:00 everyday
 
 jobs:
   build:
