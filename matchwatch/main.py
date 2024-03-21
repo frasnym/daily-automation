@@ -124,7 +124,7 @@ def send_telegram_message(token, chat_id, text):
 
 def ForwardToTelegram(BOT_TOKEN: str, CHAT_ID: str, result: dict):
     messages: list[str] = []
-    messages.append("from: py-matchwatch-loggin #matchwatch\n")
+    messages.append("source: {} #matchwatch\n".format(os.environ.get("APP")))
     messages.append("username: {}".format(result["username"]))
     if result["err"] is not None:
         messages.append("err: {}".format(result["err"]))
