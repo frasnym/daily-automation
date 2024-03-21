@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -10,10 +11,18 @@ from selenium.webdriver.support import expected_conditions as EC
 
 def CreateChromeWebDrive():
     chrome_options = Options()  # Create ChromeOptions object
-    chrome_options.add_argument("--headless")  # Set headless mode
-    driver = webdriver.Chrome(
-        options=chrome_options
-    )  # Create a new instance of the Chrome driver with headless option
+    options = [
+        "--headless",
+        # "--disable-gpu",
+        # "--window-size=1920,1200",
+        # "--ignore-certificate-errors",
+        # "--disable-extensions",
+        # "--no-sandbox",
+        # "--disable-dev-shm-usage",
+    ]
+    for option in options:
+        chrome_options.add_argument(option)
+    driver = webdriver.Chrome(options=chrome_options)
     return driver
 
 
@@ -74,15 +83,21 @@ def GetPoint(username: str, password: str) -> dict:
     button_el.click()  # clicking the button
 
     # Wait dashboard
-    # Total point. Wait until the element with class "text-primary-1" and "body-text-3" is found
     total_el = wait.until(
         EC.presence_of_element_located((By.CSS_SELECTOR, ".text-primary-1.body-text-3"))
     )
-    result["point"] = total_el.text
-    result["process"].append(f"total_el found: {total_el.text}")
+    result["process"].append(f"total_el 1 found: {total_el.text}")
 
     # Get Today Point
     driver.get("https://www.jamtangan.com/account/membership/activities")
+    time.sleep(2)
+
+    # Total point
+    total_el = driver.find_element(
+        By.CSS_SELECTOR, ".text-primary-1 .text-sm+ .text-sm"
+    )
+    result["point"] = total_el.text
+    result["process"].append(f"total_el 2 found: {total_el.text}")
 
     # Loop through the history
     history_els = driver.find_elements(By.CLASS_NAME, "point-item")
