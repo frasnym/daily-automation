@@ -11,3 +11,7 @@ This service will help to login to specific website daily.
 
 - Scheduler: Github Actions
 - Scraper: Selenium
+
+## TODO
+
+- Update README every 1 month to keep automation running
