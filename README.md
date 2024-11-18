@@ -1,17 +1,17 @@
-# Daily Login Automation
+# Daily Automation
 
-This service will help to login to specific website daily.
+This service automates the process of logging into specific websites daily.
 
-## List of Website
+## Features
 
-- Login
-  - jamtangan.com (matchwatch)
+- Automatically log in to [jamtangan.com/matchwatch](https://jamtangan.com) to earn points.
+- Fetch match results from [manutd.com](https://www.manutd.com/en/Matches) to check if Manchester United won.
 
-## Tools
+## Tools Used
 
-- Scheduler: Github Actions
-- Scraper: Selenium
+- **Scheduler**: GitHub Actions
+- **Scraper**: Selenium
 
-## TODO
+## Tasks
 
-- Update README every 1 month to keep automation running
+- Regularly update the README file every month to maintain automation functionality.
