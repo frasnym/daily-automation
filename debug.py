@@ -1,14 +1,9 @@
-import os
-import json
 from dotenv import load_dotenv
-
-from matchwatch.main import ForwardToTelegram, GetPoint
+from matchwatch.main import main as MWMain
+from manutd.main import main as ManUtdMain
 
 
 load_dotenv()
 
-accounts = json.loads(os.environ.get("ACCOUNTS"))
-for acc in accounts:
-    res = GetPoint(acc["account"], acc["password"])
-    print(json.dumps(res))
-    ForwardToTelegram(os.environ.get("BOT_TOKEN"), os.environ.get("CHAT_ID"), res)
+MWMain()
+ManUtdMain()
