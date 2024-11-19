@@ -1,9 +1,9 @@
-name: Automatic do login to matchwatch everyday
+name: Automatic daily automation
 
 on:
   # push # (test)
   schedule:
-    - cron: "0 21 * * *" # Runs At 21:00 UTC = 04:00 GMT+8 everyday
+    - cron: "0 23 * * *" # Runs At 23:00 UTC = 07:00 GMT+8 everyday
 
 jobs:
   setup-and-verify:
@@ -50,5 +50,7 @@ jobs:
       - name: Run Python script (manutd match result)
         env:
           APP: ${{ github.event.repository.name }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
           MANUTD_APIKEY: ${{ secrets.MANUTD_APIKEY }}
         run: python3 manutd/main.py
