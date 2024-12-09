@@ -33,16 +33,21 @@ def process_match_data(data):
         if time_difference > 2:
             break
 
+        is_mu_home = doc["hometeamid_t"] == "1"
+
         home_score = doc["resultdata_t"]["HomeResult"]["Score"]
         away_score = doc["resultdata_t"]["AwayResult"]["Score"]
         competition = doc["competitionname_t"]
         match_date_str = match_date.strftime("%Y-%m-%d")
 
         # Determine match result (WIN, LOSE, or DRAW)
-        result_txt = "DRAW"  # Default result if no MatchWinner
-        if "MatchWinner" in doc["resultdata_t"]:
-            match_winner = doc["resultdata_t"]["MatchWinner"]
-            result_txt = "WIN" if match_winner == "1" else "LOSE"
+        result_txt = "ERROR"
+        if home_score > away_score:
+            result_txt = "WIN" if is_mu_home else "LOSE"
+        elif home_score < away_score:
+            result_txt = "WIN" if not is_mu_home else "LOSE"
+        else:
+            result_txt = "DRAW"
 
         # Format the match result text
         result["result"] += (
