@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import json
 import os
 import requests
+import pytz
 
 
 def fetch_match_results(url, headers):
@@ -38,7 +39,11 @@ def process_match_data(data):
         home_score = doc["resultdata_t"]["HomeResult"]["Score"]
         away_score = doc["resultdata_t"]["AwayResult"]["Score"]
         competition = doc["competitionname_t"]
-        match_date_str = match_date.strftime("%Y-%m-%d")
+
+        # Format date
+        tz_jakarta = pytz.timezone('Asia/Jakarta')
+        date_obj_jakarta = match_date.astimezone(tz_jakarta)
+        match_date_str = str(date_obj_jakarta)
 
         # Determine match result (WIN, LOSE, or DRAW)
         result_txt = "ERROR"
