@@ -14,8 +14,12 @@ def send_telegram_message(title, body, hashtag):
     text += f"*{title}*\n\n"
     text += f"*{body}*"
 
-    footer = f"source: {os.environ.get('APP')} #" + hashtag
+    footer = f"source: `{os.environ.get('APP')}`"
     text += f"\n\n{footer}"
+
+    tags = ["dailyautomation", hashtag]
+    tagsStr = " ".join(f"#{item}" for item in tags)
+    text += f"\n{tagsStr}"
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     params = {
