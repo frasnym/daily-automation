@@ -66,3 +66,19 @@ jobs:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           MANUTD_APIKEY: ${{ secrets.MANUTD_APIKEY }}
         run: python3 manutd/main.py
+
+  shipment-tracking-result:
+    needs: setup-and-verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Python script (shipment_tracking)
+        env:
+          APP: ${{ github.event.repository.name }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          NOTION_DAILY_TASK_TOKEN: ${{ secrets.NOTION_DAILY_TASK_TOKEN }}
+        run: python3 shipment_tracking/main.py
