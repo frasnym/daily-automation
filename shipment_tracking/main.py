@@ -1,6 +1,10 @@
+import sys
 import requests
 import json
 import os
+
+# Add the parent directory to the Python path so you can import from the 'telegram' package.
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from telegram.main import send_telegram_message
 

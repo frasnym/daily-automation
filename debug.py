@@ -6,5 +6,6 @@ from shipment_tracking.main import main as ShipmentTrackingMain
 
 load_dotenv()
 
-ShipmentTrackingMain()
+# ShipmentTrackingMain()
+MWMain()
 # ManUtdMain()

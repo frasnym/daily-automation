@@ -23,6 +23,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install telegram package
+        run: |
+          cd telegram
+          python -m pip install .
+
   login-to-matchwatch:
     needs: setup-and-verify
     runs-on: ubuntu-latest
