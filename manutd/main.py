@@ -111,7 +111,7 @@ def format_message(result: str) -> str:
 def main():
     """Run the script and send the result to Telegram."""
 
-    title = "Manchester United Daily Match Result"
+    title = "⚽ Manchester United Daily Match Result"
     hashtag = "manutd"
 
     try:
