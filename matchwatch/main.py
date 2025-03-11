@@ -38,20 +38,24 @@ def perform_login(driver, username, password, wait):
     login_form = get_login_form(driver, wait, "https://www.jamtangan.com/login")
     if not login_form:
         result["err"] = "Login form not found"
+        print("[ERR] Login form not found")
         return result
 
     result["process"].append(f"Login form found: {login_form.get_attribute('class')}")
+    print("Login form found")
 
     # Enter username
     username_input = login_form.find_element(By.TAG_NAME, "input")
     if not username_input:
         result["err"] = "Username input not found"
+        print("[ERR] Username input not found")
         return result
 
     username_input.send_keys(username)
     result["process"].append(
         f"Username input found and filled: {username_input.get_attribute('class')}"
     )
+    print("Username input found and filled")
 
     # Trigger password input and enter password
     login_form = driver.find_element(By.CLASS_NAME, "login-form-container")
@@ -60,25 +64,30 @@ def perform_login(driver, username, password, wait):
     ]  # Assume the second input is for password
     if not password_input:
         result["err"] = "Password input not found"
+        print("[ERR] Password input not found")
         return result
 
     password_input.send_keys(password)
     result["process"].append("Password input found and filled")
+    print("Password input found and filled")
 
     # Click login button
     login_button = login_form.find_element(By.TAG_NAME, "button")
     if not login_button:
         result["err"] = "Login button not found"
+        print("[ERR] Login button not found")
         return result
 
     login_button.click()
     result["process"].append("Login button clicked")
+    print("Login button clicked")
 
     # Wait for dashboard
     wait.until(
         EC.presence_of_element_located((By.CSS_SELECTOR, ".text-primary-1.body-text-3"))
     )
     result["process"].append("Dashboard loaded")
+    print("Dashboard loaded")
 
     return result
 
@@ -96,12 +105,14 @@ def fetch_points(driver, wait, result):
     )
     result["point"] = total_el.text
     result["process"].append(f"Total points fetched: {total_el.text}")
+    print("Total points fetched")
 
     # Fetch last activity
     history_els = driver.find_elements(By.CLASS_NAME, "point-item")
     if history_els:
         result["last"] = history_els[0].text
         result["process"].append(f"Last activity fetched: {history_els[0].text}")
+        print("Last activity fetched")
 
     return result
 
