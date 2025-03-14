@@ -61,7 +61,6 @@ def perform_login(
         login_form = get_login_form(driver, wait, "https://www.jamtangan.com/login")
 
         if not login_form:
-            print("[ERR] Login form not found")
             raise Exception("Login form not found")
 
         print(f"Login form found: {login_form.get_attribute('class')}")
@@ -69,7 +68,6 @@ def perform_login(
         # Enter username
         username_input = login_form.find_element(By.TAG_NAME, "input")
         if not username_input:
-            print("[ERR] Username input not found")
             raise Exception("Username input not found")
 
         username_input.send_keys(username)
@@ -83,7 +81,6 @@ def perform_login(
             1
         ]  # Assume the second input is for password
         if not password_input:
-            print("[ERR] Password input not found")
             raise Exception("Password input not found")
 
         password_input.send_keys(password)
@@ -92,7 +89,6 @@ def perform_login(
         # Click login button
         login_button = login_form.find_element(By.TAG_NAME, "button")
         if not login_button:
-            print("[ERR] Login button not found")
             raise Exception("Login button not found")
 
         login_button.click()
@@ -191,7 +187,7 @@ def main():
         except Exception as e:
             messages.append(f"in account {account['account']}; error occurred: {e}")
 
-    final_message = "\n".join(messages)
+    final_message = "\n\n".join(messages)
     send_telegram_message(title, final_message, hashtag)
 
 

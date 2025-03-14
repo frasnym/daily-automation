@@ -101,7 +101,7 @@ def format_message(result: str) -> str:
     if result == "":
         messages.append("No match results found.")
     else:
-        messages.append(result["result"])
+        messages.append(result)
 
     final_message = "\n".join(messages)
 
