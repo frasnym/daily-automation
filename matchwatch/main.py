@@ -102,7 +102,9 @@ def perform_login(
         )
         print("Dashboard loaded")
     except Exception as e:
-        raise Exception(f"Error logging in: {str(e)}")
+        print("Error performing login")
+        print(e)
+        raise Exception("Error logging in")
 
 
 def fetch_points(driver: webdriver.Chrome) -> Tuple[str, str]:
@@ -131,21 +133,15 @@ def fetch_points(driver: webdriver.Chrome) -> Tuple[str, str]:
         return point, last
 
     except Exception as e:
-        raise Exception(f"Error fetching points: {e}")
+        print("Error fetching points")
+        print(e)
+        raise Exception("Error fetching points")
 
 
 def get_points(username: str, password: str) -> Result:
     """
     Main function to log in and fetch points and activity history.
     """
-
-    result = {
-        "username": username,
-        "point": None,
-        "last": None,
-        "process": [],
-        "err": None,
-    }
 
     driver = create_chrome_webdriver()
     wait = WebDriverWait(driver, 10)
@@ -160,7 +156,9 @@ def get_points(username: str, password: str) -> Result:
 
         return Result(username, point, last)
     except Exception as e:
-        raise Exception(f"Error fetching points: {e}")
+        print("Error fetching points")
+        print(e)
+        raise Exception("Error fetching points")
     finally:
         driver.quit()
 
