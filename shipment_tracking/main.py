@@ -255,26 +255,41 @@ def main():
     hashtag = "shipmenttracking"
     try:
         tracking_data = get_working_money_tracking_numbers()
-        tracking_numbers = [item["Bilyet Shipment"] for item in tracking_data]
+
+        # Combine the data first
+        combined_results = []
+        seen_reference_numbers = set()  # To track unique reference numbers
+        for item in tracking_data:
+            reference_no = item["Bilyet Shipment"]
+            if reference_no not in seen_reference_numbers:
+                combined_results.append(
+                    {
+                        "working_money_data": item,
+                        "shipment_data": {
+                            "reference_no": reference_no,
+                            "last_detail": None,  # Placeholder for tracking details
+                        },
+                    }
+                )
+                seen_reference_numbers.add(reference_no)
+
+        # Extract tracking numbers from the combined data
+        tracking_numbers = [
+            item["shipment_data"]["reference_no"] for item in combined_results
+        ]
+
+        # Track shipments
         shipment_results = track_shipments(tracking_numbers)
 
-        # Combine the data
-        combined_results = []
+        # Update combined results with tracking details
         for i, shipment_result in enumerate(shipment_results):
             last_detail = None
             if shipment_result["details"]:
                 last_detail = shipment_result["details"][-1]  # Get the last detail
 
-            combined_results.append(
-                {
-                    "working_money_data": tracking_data[i],
-                    "shipment_data": {
-                        "reference_no": shipment_result["reference_no"],
-                        "last_detail": last_detail,  # Store only the last detail
-                    },
-                }
-            )
+            combined_results[i]["shipment_data"]["last_detail"] = last_detail
 
+        # Format and send the message
         formatted_message = format_shipment_message(combined_results)
         send_telegram_message(title, formatted_message, hashtag)
     except Exception as e:
