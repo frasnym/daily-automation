@@ -222,6 +222,25 @@ def track_shipments(reference_numbers, logistic_id=1):
         raise Exception(f"Error parsing shipment tracking data: {e}")
 
 
+def combine_tracking_data(tracking_data):
+    combined_results = []
+    seen_reference_numbers = set()
+    for item in tracking_data:
+        reference_no = item["Bilyet Shipment"]
+        if reference_no not in seen_reference_numbers:
+            combined_results.append(
+                {
+                    "working_money_data": item,
+                    "shipment_data": {
+                        "reference_no": reference_no,
+                        "last_detail": None,
+                    },
+                }
+            )
+            seen_reference_numbers.add(reference_no)
+    return combined_results
+
+
 def format_shipment_message(data):
     """
     Formats the shipment tracking data into a nicely formatted message.
@@ -257,21 +276,7 @@ def main():
         tracking_data = get_working_money_tracking_numbers()
 
         # Combine the data first
-        combined_results = []
-        seen_reference_numbers = set()  # To track unique reference numbers
-        for item in tracking_data:
-            reference_no = item["Bilyet Shipment"]
-            if reference_no not in seen_reference_numbers:
-                combined_results.append(
-                    {
-                        "working_money_data": item,
-                        "shipment_data": {
-                            "reference_no": reference_no,
-                            "last_detail": None,  # Placeholder for tracking details
-                        },
-                    }
-                )
-                seen_reference_numbers.add(reference_no)
+        combined_results = combine_tracking_data(tracking_data)
 
         # Extract tracking numbers from the combined data
         tracking_numbers = [
