@@ -224,20 +224,29 @@ def track_shipments(reference_numbers, logistic_id=1):
 
 def combine_tracking_data(tracking_data):
     combined_results = []
-    seen_reference_numbers = set()
+    seen_reference_numbers = {}
+
     for item in tracking_data:
         reference_no = item["Bilyet Shipment"]
-        if reference_no not in seen_reference_numbers:
-            combined_results.append(
-                {
-                    "working_money_data": item,
-                    "shipment_data": {
-                        "reference_no": reference_no,
-                        "last_detail": None,
-                    },
-                }
-            )
-            seen_reference_numbers.add(reference_no)
+        invest_value = item.get("Invest Value", 0)
+
+        if reference_no in seen_reference_numbers:
+            # If the reference number already exists, sum the Invest Value
+            seen_reference_numbers[reference_no]["working_money_data"][
+                "Invest Value"
+            ] += invest_value
+        else:
+            # Add a new entry for the reference number
+            seen_reference_numbers[reference_no] = {
+                "working_money_data": item,
+                "shipment_data": {
+                    "reference_no": reference_no,
+                    "last_detail": None,
+                },
+            }
+
+    # Convert the dictionary back to a list
+    combined_results = list(seen_reference_numbers.values())
     return combined_results
 
 
