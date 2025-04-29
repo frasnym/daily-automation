@@ -292,6 +292,11 @@ def main():
             item["shipment_data"]["reference_no"] for item in combined_results
         ]
 
+        # Check if there are tracking numbers
+        if not tracking_numbers:
+            send_telegram_message(title, "No tracking numbers found.", hashtag)
+            return
+
         # Track shipments
         shipment_results = track_shipments(tracking_numbers)
 
