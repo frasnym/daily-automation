@@ -2,13 +2,16 @@ import os
 import requests
 
 
-def send_telegram_message(title, body, hashtag):
+def send_telegram_message(title: str, body: str, hashtag: str):
     """
     Send a message via Telegram bot API.
     """
 
     token = os.environ.get("BOT_TOKEN")
     chat_id = os.environ.get("CHAT_ID")
+    if not token or not chat_id:
+        print("Bot token or chat ID not set.")
+        return
 
     text = ""
     text += f"*{title}*\n\n"
@@ -22,7 +25,7 @@ def send_telegram_message(title, body, hashtag):
     text += f"\n{tagsStr}"
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    params = {
+    params: dict[str, str] = {
         "chat_id": chat_id,
         "text": text,
         "parse_mode": "Markdown",

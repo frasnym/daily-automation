@@ -6,7 +6,7 @@ from typing import List, Tuple
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -29,7 +29,7 @@ def create_chrome_webdriver() -> webdriver.Chrome:
     Create and return a headless Chrome WebDriver instance.
     """
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--headless")
     # Additional options can be added as needed.
     return webdriver.Chrome(options=chrome_options)
 
@@ -63,31 +63,31 @@ def perform_login(
         if not login_form:
             raise Exception("Login form not found")
 
-        print(f"Login form found: {login_form.get_attribute('class')}")
+        print(f"Login form found: {login_form.get_attribute('class')}")  # type: ignore
 
         # Enter username
-        username_input = login_form.find_element(By.TAG_NAME, "input")
+        username_input = login_form.find_element(By.TAG_NAME, "input")  # type: ignore
         if not username_input:
             raise Exception("Username input not found")
 
-        username_input.send_keys(username)
+        username_input.send_keys(username)  # type: ignore
         print(
-            f"Username input found and filled: {username_input.get_attribute('class')}"
+            f"Username input found and filled: {username_input.get_attribute('class')}"  # type: ignore
         )
 
         # Trigger password input and enter password
         login_form = driver.find_element(By.CLASS_NAME, "login-form-container")
-        password_input = login_form.find_elements(By.TAG_NAME, "input")[
+        password_input = login_form.find_elements(By.TAG_NAME, "input")[  # type: ignore
             1
         ]  # Assume the second input is for password
         if not password_input:
             raise Exception("Password input not found")
 
-        password_input.send_keys(password)
+        password_input.send_keys(password)  # type: ignore
         print("Password input found and filled")
 
         # Click login button
-        login_button = login_form.find_element(By.TAG_NAME, "button")
+        login_button = login_form.find_element(By.TAG_NAME, "button")  # type: ignore
         if not login_button:
             raise Exception("Login button not found")
 
