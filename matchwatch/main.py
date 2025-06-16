@@ -165,15 +165,20 @@ def main():
     messages: List[str] = []
 
     accounts = json.loads(os.environ.get("ACCOUNTS", "[]"))
+    if accounts.__len__() == 0:
+        logger.error("No accounts found in environment variables")
+        messages.append("No accounts found in environment variables")
+
     for account in accounts:
+        logger.info(f"Processing account: {account['account']}")
+
         try:
             points = login_and_get_points(account["account"], account["password"])
             logger.info(f"Get point of {account['account']} success")
             messages.append(format_message(points))
         except Exception as e:
-            messages.append(f"In account {account['account']}; error occurred: {e}")
-
-        break
+            logger.error(f"Error getting points: {e}")
+            messages.append(f"In account {account['account']}; error occurred")
 
     final_message = "\n\n".join(messages)
     send_telegram_message(title, final_message, hashtag)

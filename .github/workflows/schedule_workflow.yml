@@ -1,89 +1,97 @@
 name: Automatic daily automation
 
 on:
-  # push # (test)
   schedule:
-    - cron: "0 23 * * *" # Runs At 23:00 UTC = 07:00 GMT+8 everyday
+    - cron: "0 23 * * *" # 23:00 UTC (07:00 GMT+8)
+
+# 👇 Global environment variables (shared across all jobs)
+env:
+  APP: ${{ github.event.repository.name }}
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  CHAT_ID: ${{ secrets.CHAT_ID }}
 
 jobs:
-  setup-and-verify:
+  setup:
     runs-on: ubuntu-latest
-
+    outputs:
+      python-version: ${{ steps.set-python.outputs.version }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
-
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Install telegram package
-        run: |
-          cd telegram
-          python -m pip install .
-
-  # login-to-matchwatch:
-  #   needs: setup-and-verify
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v3
-  #       with:
-  #         python-version: "3.8"
-
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install -r requirements.txt
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-
-  #     - name: Run Python script (login to matchwatch)
-  #       env:
-  #         APP: ${{ github.event.repository.name }}
-  #         ACCOUNTS: ${{ secrets.ACCOUNTS }}
-  #         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-  #         CHAT_ID: ${{ secrets.CHAT_ID }}
-  #       run: python3 matchwatch/main.py
+          pip install ./telegram ./logger
 
   manutd-match-result:
-    needs: setup-and-verify
+    needs: setup
     runs-on: ubuntu-latest
-
+    env:
+      MANUTD_APIKEY: ${{ secrets.MANUTD_APIKEY }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ needs.setup.outputs.python-version }}
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ./telegram ./logger
+      - name: Run ManUtd script
+        run: python manutd/main.py
 
-      - name: Run Python script (manutd match result)
-        env:
-          APP: ${{ github.event.repository.name }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-          MANUTD_APIKEY: ${{ secrets.MANUTD_APIKEY }}
-        run: python3 manutd/main.py
-
-  shipment-tracking-result:
-    needs: setup-and-verify
+  matchwatch:
+    needs: setup
     runs-on: ubuntu-latest
-
+    env:
+      ACCOUNTS: ${{ secrets.ACCOUNTS }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ needs.setup.outputs.python-version }}
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ./telegram ./logger
+      - name: Run Matchwatch script
+        run: python matchwatch/main.py
 
-      - name: Run Python script (shipment_tracking)
-        env:
-          APP: ${{ github.event.repository.name }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-          NOTION_DAILY_TASK_TOKEN: ${{ secrets.NOTION_DAILY_TASK_TOKEN }}
-        run: python3 shipment_tracking/main.py
+  shipment-tracking:
+    needs: setup
+    runs-on: ubuntu-latest
+    env:
+      NOTION_DAILY_TASK_TOKEN: ${{ secrets.NOTION_DAILY_TASK_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ needs.setup.outputs.python-version }}
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ./telegram ./logger
+      - name: Run Shipment Tracking
+        run: python shipment_tracking/main.py
