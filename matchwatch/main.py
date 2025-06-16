@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import logging
 from typing import List
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -9,11 +10,19 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 
-
 # Add the parent directory to the Python path so you can import from the 'telegram' package.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from telegram.main import send_telegram_message
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Constants
+LOGIN_URL = "https://www.jamtangan.com/login"
+LOGIN_FORM_CLASS = "login-form-container"
+POINT_CSS_SELECTOR = r".md\:text-display-m-semibold"
 
 
 class Result:
@@ -38,14 +47,14 @@ def get_login_form(
     """
     Navigate to the login page and return the login form element.
     """
-
     try:
         driver.get(url)
         return wait.until(
-            EC.presence_of_element_located((By.CLASS_NAME, "login-form-container"))
+            EC.presence_of_element_located((By.CLASS_NAME, LOGIN_FORM_CLASS))
         )
     except Exception as e:
-        raise Exception(f"Error finding login form: {e}")
+        logger.error(f"Error finding login form: {e}")
+        raise
 
 
 def perform_login(
@@ -57,13 +66,12 @@ def perform_login(
     """
     Perform the login action using the provided credentials.
     """
-
     try:
         # Find the login form
-        login_form = get_login_form(driver, wait, "https://www.jamtangan.com/login")
+        login_form = get_login_form(driver, wait, LOGIN_URL)
         if not login_form:
             raise Exception("Login form not found")
-        print(f"Login form found")
+        logger.info("Login form found")
 
         # Enter username
         username_input = login_form.find_element(By.TAG_NAME, "input")  # type: ignore
@@ -71,10 +79,10 @@ def perform_login(
             raise Exception("Username input not found")
 
         username_input.send_keys(username)  # type: ignore
-        print("Username input found and filled")
+        logger.info("Username input found and filled")
 
         # Trigger password input and enter password
-        login_form = driver.find_element(By.CLASS_NAME, "login-form-container")
+        login_form = driver.find_element(By.CLASS_NAME, LOGIN_FORM_CLASS)
 
         # Assume the second input is for password (index 1)
         password_input = login_form.find_elements(By.TAG_NAME, "input")[1]  # type: ignore
@@ -82,7 +90,7 @@ def perform_login(
             raise Exception("Password input not found")
 
         password_input.send_keys(password)  # type: ignore
-        print("Password input found and filled")
+        logger.info("Password input found and filled")
 
         # Click login button
         login_button = login_form.find_element(By.TAG_NAME, "button")  # type: ignore
@@ -90,61 +98,62 @@ def perform_login(
             raise Exception("Login button not found")
 
         login_button.click()
-        print("Login button clicked")
+        logger.info("Login button clicked")
     except Exception as e:
-        raise Exception(f"Error performing login: {e}")
+        logger.error(f"Error performing login: {e}")
+        raise
 
 
 def get_point(wait: WebDriverWait[webdriver.Chrome]) -> str:
     """
-    Get user points on dashboard
+    Get user points on dashboard.
     """
-
     try:
         # Wait for dashboard
         point_el = wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, r".md\:text-display-m-semibold")
-            )
+            EC.presence_of_element_located((By.CSS_SELECTOR, POINT_CSS_SELECTOR))
         )
-        print(f"Total points fetched: {point_el.text}")
+        logger.info(f"Total points fetched: {point_el.text}")
         return point_el.text
-
     except Exception as e:
-        raise Exception(f"Error fetching points: {e}")
+        logger.error(f"Error fetching points: {e}")
+        raise
 
 
 def login_and_get_points(username: str, password: str) -> Result:
     """
     Main function to log in and fetch points and activity history.
     """
-
     driver = create_chrome_webdriver()
     wait = WebDriverWait(driver, 10)
-    print("WebDriver created")
+    logger.info("WebDriver created")
 
     try:
         perform_login(driver, username, password, wait)
-        print("Login successful")
+        logger.info("Login successful")
 
         point = get_point(wait)
-        print("Points and last activity fetched")
+        logger.info("Points and last activity fetched")
 
         return Result(username, point)
     except Exception as e:
-        raise Exception(f"Error get points: {e}")
+        logger.error(f"Error getting points: {e}")
+        raise
     finally:
         driver.quit()
 
 
 def format_message(res: Result) -> str:
+    """
+    Format the result message.
+    """
     message = ""
 
-    if res.username != "":
-        message += "Username: " + res.username
+    if res.username:
+        message += f"Username: {res.username}"
 
-    if res.point != "":
-        message += "\nPoints: " + res.point
+    if res.point:
+        message += f"\nPoints: {res.point}"
 
     return message
 
@@ -161,11 +170,10 @@ def main():
     for account in accounts:
         try:
             points = login_and_get_points(account["account"], account["password"])
-            print(f"get point of {account['account']} success\n")
-
+            logger.info(f"Get point of {account['account']} success")
             messages.append(format_message(points))
         except Exception as e:
-            messages.append(f"in account {account['account']}; error occurred: {e}")
+            messages.append(f"In account {account['account']}; error occurred: {e}")
 
     final_message = "\n\n".join(messages)
     send_telegram_message(title, final_message, hashtag)
