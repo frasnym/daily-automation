@@ -1,8 +1,7 @@
 import json
 import os
 import sys
-import time
-from typing import List, Tuple
+from typing import List
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -18,10 +17,9 @@ from telegram.main import send_telegram_message
 
 
 class Result:
-    def __init__(self, username: str, point: str, last: str):
+    def __init__(self, username: str, point: str):
         self.username = username
         self.point = point
-        self.last = last
 
 
 def create_chrome_webdriver() -> webdriver.Chrome:
@@ -29,7 +27,7 @@ def create_chrome_webdriver() -> webdriver.Chrome:
     Create and return a headless Chrome WebDriver instance.
     """
     chrome_options = Options()
-    # chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless")  # type: ignore
     # Additional options can be added as needed.
     return webdriver.Chrome(options=chrome_options)
 
@@ -41,10 +39,13 @@ def get_login_form(
     Navigate to the login page and return the login form element.
     """
 
-    driver.get(url)
-    return wait.until(
-        EC.presence_of_element_located((By.CLASS_NAME, "login-form-container"))
-    )
+    try:
+        driver.get(url)
+        return wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, "login-form-container"))
+        )
+    except Exception as e:
+        raise Exception(f"Error finding login form: {e}")
 
 
 def perform_login(
@@ -58,12 +59,11 @@ def perform_login(
     """
 
     try:
+        # Find the login form
         login_form = get_login_form(driver, wait, "https://www.jamtangan.com/login")
-
         if not login_form:
             raise Exception("Login form not found")
-
-        print(f"Login form found: {login_form.get_attribute('class')}")  # type: ignore
+        print(f"Login form found")
 
         # Enter username
         username_input = login_form.find_element(By.TAG_NAME, "input")  # type: ignore
@@ -71,15 +71,13 @@ def perform_login(
             raise Exception("Username input not found")
 
         username_input.send_keys(username)  # type: ignore
-        print(
-            f"Username input found and filled: {username_input.get_attribute('class')}"  # type: ignore
-        )
+        print("Username input found and filled")
 
         # Trigger password input and enter password
         login_form = driver.find_element(By.CLASS_NAME, "login-form-container")
-        password_input = login_form.find_elements(By.TAG_NAME, "input")[  # type: ignore
-            1
-        ]  # Assume the second input is for password
+
+        # Assume the second input is for password (index 1)
+        password_input = login_form.find_elements(By.TAG_NAME, "input")[1]  # type: ignore
         if not password_input:
             raise Exception("Password input not found")
 
@@ -93,52 +91,30 @@ def perform_login(
 
         login_button.click()
         print("Login button clicked")
-
-        # Wait for dashboard
-        wait.until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, ".text-primary-1.body-text-3")
-            )
-        )
-        print("Dashboard loaded")
     except Exception as e:
-        print("Error performing login")
-        print(e)
-        raise Exception("Error logging in")
+        raise Exception(f"Error performing login: {e}")
 
 
-def fetch_points(driver: webdriver.Chrome) -> Tuple[str, str]:
+def get_point(wait: WebDriverWait[webdriver.Chrome]) -> str:
     """
-    Fetch user points and activity history.
+    Get user points on dashboard
     """
 
     try:
-        driver.get("https://www.jamtangan.com/account/membership/activities")
-        time.sleep(2)  # Temporary wait; ideally replaced with WebDriverWait
-
-        # Fetch total points
-        total_el = driver.find_element(
-            By.CSS_SELECTOR, ".text-primary-1 .text-sm+ .text-sm"
+        # Wait for dashboard
+        point_el = wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, r".md\:text-display-m-semibold")
+            )
         )
-        point = total_el.text
-        print(f"Total points fetched: {total_el.text}")
-
-        # Fetch last activity
-        history_els = driver.find_elements(By.CLASS_NAME, "point-item")
-        last = ""
-        if history_els:
-            last = history_els[0].text
-            print(f"Last activity fetched: {history_els[0].text}")
-
-        return point, last
+        print(f"Total points fetched: {point_el.text}")
+        return point_el.text
 
     except Exception as e:
-        print("Error fetching points")
-        print(e)
-        raise Exception("Error fetching points")
+        raise Exception(f"Error fetching points: {e}")
 
 
-def get_points(username: str, password: str) -> Result:
+def login_and_get_points(username: str, password: str) -> Result:
     """
     Main function to log in and fetch points and activity history.
     """
@@ -151,20 +127,26 @@ def get_points(username: str, password: str) -> Result:
         perform_login(driver, username, password, wait)
         print("Login successful")
 
-        point, last = fetch_points(driver)
+        point = get_point(wait)
         print("Points and last activity fetched")
 
-        return Result(username, point, last)
+        return Result(username, point)
     except Exception as e:
-        print("Error fetching points")
-        print(e)
-        raise Exception("Error fetching points")
+        raise Exception(f"Error get points: {e}")
     finally:
         driver.quit()
 
 
 def format_message(res: Result) -> str:
-    return f"Username: {res.username}\nPoints: {res.point}\nLast activity: {res.last}"
+    message = ""
+
+    if res.username != "":
+        message += "Username: " + res.username
+
+    if res.point != "":
+        message += "\nPoints: " + res.point
+
+    return message
 
 
 def main():
@@ -178,7 +160,7 @@ def main():
     accounts = json.loads(os.environ.get("ACCOUNTS", "[]"))
     for account in accounts:
         try:
-            points = get_points(account["account"], account["password"])
+            points = login_and_get_points(account["account"], account["password"])
             print(f"get point of {account['account']} success\n")
 
             messages.append(format_message(points))
