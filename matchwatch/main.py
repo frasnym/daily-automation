@@ -1,7 +1,6 @@
 import json
 import os
 import sys
-import logging
 from typing import List
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -14,10 +13,9 @@ from selenium.webdriver.support import expected_conditions as EC
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from telegram.main import send_telegram_message
+from logger.main import setup_logger
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 # Constants
 LOGIN_URL = "https://www.jamtangan.com/login"
@@ -174,6 +172,8 @@ def main():
             messages.append(format_message(points))
         except Exception as e:
             messages.append(f"In account {account['account']}; error occurred: {e}")
+
+        break
 
     final_message = "\n\n".join(messages)
     send_telegram_message(title, final_message, hashtag)
