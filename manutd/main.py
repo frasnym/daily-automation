@@ -15,7 +15,7 @@ def fetch_match_results():
     """Fetch match results from the API."""
 
     try:
-        url = "https://cdnapi.manutd.com/api/v1/en/id/all/web/list/matchresult/sid:2024~isMU:true/0/30"
+        url = "https://cdnapi.manutd.com/api/v1/en/id/all/web/list/matchresult/sid:2025~isMU:true/0/30"
         headers = {
             "x-api-key": os.environ.get("MANUTD_APIKEY"),
         }
