@@ -2,7 +2,7 @@ name: Automatic daily automation
 
 on:
   schedule:
-    - cron: "0 23 * * *" # 23:00 UTC (07:00 GMT+8)
+    - cron: "1 23 * * *" # 23:00 UTC (07:01 GMT+8)
 
 # 👇 Global environment variables (shared across all jobs)
 env:
